@@ -6,6 +6,7 @@ import Auth from "./pages/auth/Auth";
 import Chat from "./pages/chat/Chat";
 import Profile from "./pages/profile/Profile";
 
+const App = () => {
     return (
         <>
             <Routes>

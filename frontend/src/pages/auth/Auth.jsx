@@ -6,6 +6,10 @@ import { useState } from "react";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import { Input } from "@/components/ui/input";
 import { Button } from "@/components/ui/button";
+import toast from "react-hot-toast";
+import { checkEmail } from "../../utils/checkEmail.js";
+import { apiClient } from "../../lib/api-client.js";
+import { SIGNUP_ROUTE } from "../../utils/constant.js";
 
 const Auth = () => {
     const initialFormData = {
@@ -17,12 +21,49 @@ const Auth = () => {
     const [formData, setFormData] = useState(initialFormData);
 
     const handleInputChange = (e) => {
-        setLoginData({ ...loginData, [e.target.name]: e.target.value });
+        setFormData({ ...formData, [e.target.name]: e.target.value });
+    };
+
+    const validateSignupData = () => {
+        if (!formData.email) {
+            toast.error("Email is required", { duration: 2000 });
+            return false;
+        }
+        if (!checkEmail(formData.email)) {
+            toast.error("Enter a valid Email address");
+            return false;
+        }
+
+        if (!formData.password) {
+            toast.error("Password is required", { duration: 2000 });
+            return false;
+        }
+        if (formData.password !== formData.confirmPassword) {
+            toast.error("Confirm Password and Password should be same");
+            return false;
+        }
+        return true;
     };
 
     const handleLogin = async () => {};
 
-    const handleSignup = async () => {};
+    const handleSignup = async () => {
+        if (validateSignupData()) {
+            try {
+                const res = await apiClient.post(SIGNUP_ROUTE, {
+                    email: formData.email,
+                    password: formData.password,
+                });
+
+                console.log(res.data.data);
+                toast.success("Signin successful");
+                setFormData(initialFormData);
+            } catch (error) {
+                console.error(`Error Signing up ${error.response.data.error}`);
+                toast.error(error.response.data.error);
+            }
+        }
+    };
 
     return (
         <div className="h-[100vh] w-[100vw] flex justify-center items-center ">
@@ -93,6 +134,7 @@ const Auth = () => {
                             >
                                 <Input
                                     placeholder="Email"
+                                    required
                                     type="email"
                                     value={formData.email}
                                     name="email"
@@ -101,6 +143,7 @@ const Auth = () => {
                                 />
                                 <Input
                                     placeholder="Password"
+                                    required
                                     type="password"
                                     value={formData.password}
                                     name="password"
